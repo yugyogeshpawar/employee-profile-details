@@ -18,7 +18,7 @@ const searchInput = document.getElementById('search-input');
 const sidebarEmpty = document.getElementById('sidebar-empty');
 
 // Detail View Elements
-const detailName = document.getElementById('detail-name');
+const detailHeaderInfo = document.getElementById('detail-header-info');
 const detailInitials = document.getElementById('detail-initials');
 const detailPrimarySkills = document.getElementById('detail-primary-skills');
 const detailSecondarySkills = document.getElementById('detail-secondary-skills');
@@ -125,10 +125,20 @@ function processExcelData(rawJson) {
         const pSkillsKey = findKey(row, 'primaryskills', 'primaryskill', 'pskills', 'coreskills');
         const sSkillsKey = findKey(row, 'secondaryskills', 'secondaryskill', 'secondryskills', 'secondryskill', 'sskills', 'otherskills');
         const certsKey = findKey(row, 'certifications', 'certification', 'certs', 'certificates');
+        const emailKey = findKey(row, 'email', 'emailid', 'mail');
+        const roleKey = findKey(row, 'role', 'designation', 'title');
+        const podsKey = findKey(row, 'pod', 'pods');
+        const managerKey = findKey(row, 'reportingmanager', 'manager');
+        const engagementKey = findKey(row, 'engagementtype', 'engagement');
 
         return {
             id: Math.random().toString(36).substr(2, 9),
-            name: nameKey ? row[nameKey] : 'Unknown Candidate',
+            name: nameKey && row[nameKey] ? row[nameKey] : 'Unknown Candidate',
+            email: emailKey && row[emailKey] ? row[emailKey] : '',
+            role: roleKey && row[roleKey] ? row[roleKey] : '',
+            pods: podsKey && row[podsKey] ? row[podsKey] : '',
+            manager: managerKey && row[managerKey] ? row[managerKey] : '',
+            engagement: engagementKey && row[engagementKey] ? row[engagementKey] : '',
             primarySkills: pSkillsKey ? String(row[pSkillsKey]).split(/[,|;]+/).map(s => s.trim()).filter(Boolean) : [],
             secondarySkills: sSkillsKey ? String(row[sSkillsKey]).split(/[,|;]+/).map(s => s.trim()).filter(Boolean) : [],
             certifications: certsKey ? String(row[certsKey]).split(/[,|;]+/).map(s => s.trim()).filter(Boolean) : []
@@ -211,9 +221,54 @@ function renderCandidateDetail(candidate) {
     noSelectionState.classList.add('hidden');
     detailView.classList.remove('hidden');
     
-    // Header
-    detailName.textContent = candidate.name;
+    // Header Info
     detailInitials.textContent = getInitials(candidate.name);
+    
+    let headerHtml = `
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 w-full">
+            <div>
+                <h2 class="text-3xl font-bold text-slate-800 mb-1">${candidate.name}</h2>
+                ${candidate.role ? `<p class="text-lg text-slate-500 font-medium mb-2">${candidate.role}</p>` : ''}
+            </div>
+            ${candidate.pods ? `<div class="mt-1"><span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">${candidate.pods}</span></div>` : ''}
+        </div>
+    `;
+
+    const gridItems = [];
+    if (candidate.email) {
+        gridItems.push(`
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+                <i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>
+                <span class="truncate">${candidate.email}</span>
+            </div>
+        `);
+    }
+    if (candidate.manager) {
+        gridItems.push(`
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                <span class="truncate">Manager: ${candidate.manager}</span>
+            </div>
+        `);
+    }
+    if (candidate.engagement) {
+        gridItems.push(`
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+                <i data-lucide="briefcase" class="w-4 h-4 text-slate-400"></i>
+                <span class="truncate">${candidate.engagement}</span>
+            </div>
+        `);
+    }
+
+    if (gridItems.length > 0) {
+        headerHtml += `<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100 w-full">
+            ${gridItems.join('')}
+        </div>`;
+    }
+
+    detailHeaderInfo.innerHTML = headerHtml;
+    // Re-initialize icons inside the new dynamically added HTML
+    lucide.createIcons({ root: detailHeaderInfo });
     
     // Primary Skills
     detailPrimarySkills.innerHTML = '';

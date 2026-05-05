@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Dashboard</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- SheetJS for XLSX parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar for a polished look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-80 bg-white border-r border-slate-200 flex flex-col h-full shadow-sm z-10 hidden md:flex transition-all duration-300" id="sidebar">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="users" class="text-brand-600"></i>
+                Candidates
+            </h1>
+            <label for="file-upload-small" class="cursor-pointer text-slate-400 hover:text-brand-600 transition-colors" title="Upload new file">
+                <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+            </label>
+            <input id="file-upload-small" type="file" accept=".xlsx, .xls" class="hidden" />
+        </div>
+        
+        <div class="p-4">
+            <div class="relative">
+                <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
+                <input type="text" id="search-input" placeholder="Search candidates..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all placeholder-slate-400">
+            </div>
+        </div>
+
+        <ul id="candidate-list" class="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
+            <!-- Candidate items will be populated here -->
+        </ul>
+        
+        <div id="sidebar-empty" class="hidden flex-1 flex flex-col items-center justify-center p-4 text-center">
+             <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mb-2"></i>
+             <p class="text-sm text-slate-500">No candidates found.</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        <!-- Mobile Header (Visible only on small screens) -->
+        <div class="md:hidden p-4 bg-white border-b border-slate-200 flex items-center justify-between">
+            <h1 class="text-lg font-bold text-slate-900">Candidates</h1>
+            <button id="mobile-menu-btn" class="text-slate-500">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+
+        <!-- Initial Empty State (Upload Box) -->
+        <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 z-20 transition-opacity duration-300">
+            <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+                <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="file-spreadsheet" class="w-8 h-8 text-brand-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Upload Data</h2>
+                <p class="text-slate-500 mb-8">Please upload a valid .xlsx file containing candidate details to populate the dashboard.</p>
+                
+                <label for="file-upload-main" class="cursor-pointer inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg transition-colors shadow-sm w-full mb-3">
+                    <i data-lucide="upload"></i>
+                    Select .xlsx File
+                </label>
+                <input id="file-upload-main" type="file" accept=".xlsx, .xls" class="hidden" />
+                
+                <button id="download-sample-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition-colors border border-slate-200 shadow-sm w-full">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Download Sample Template
+                </button>
+            </div>
+        </div>
+
+        <!-- Candidate Detail View -->
+        <div id="detail-view" class="hidden flex-1 overflow-y-auto bg-slate-50/50">
+            <div class="max-w-4xl mx-auto w-full p-6 md:p-10">
+                
+                <!-- Profile Header -->
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 mb-8 flex items-start gap-6">
+                    <div class="w-20 h-20 bg-brand-100 rounded-full flex items-center justify-center shrink-0 border-4 border-white shadow-sm">
+                        <span id="detail-initials" class="text-2xl font-bold text-brand-600"></span>
+                    </div>
+                    <div>
+                        <h2 id="detail-name" class="text-3xl font-bold text-slate-900 mb-2"></h2>
+                        <div class="flex items-center gap-2 text-slate-500">
+                            <i data-lucide="user-check" class="w-4 h-4"></i>
+                            <span>Candidate Profile</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left Column (Skills) -->
+                    <div class="lg:col-span-2 space-y-8">
+                        
+                        <!-- Primary Skills -->
+                        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                                <i data-lucide="star" class="w-5 h-5 text-amber-500"></i>
+                                Primary Skills
+                            </h3>
+                            <div id="detail-primary-skills" class="flex flex-wrap gap-2">
+                                <!-- Tags injected here -->
+                            </div>
+                        </section>
+
+                        <!-- Secondary Skills -->
+                        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                                <i data-lucide="layers" class="w-5 h-5 text-brand-500"></i>
+                                Secondary Skills
+                            </h3>
+                            <ul id="detail-secondary-skills" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- List items injected here -->
+                            </ul>
+                        </section>
+
+                    </div>
+
+                    <!-- Right Column (Certifications) -->
+                    <div class="space-y-8">
+                        
+                        <!-- Certifications -->
+                        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 h-full">
+                            <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                                <i data-lucide="award" class="w-5 h-5 text-emerald-500"></i>
+                                Certifications
+                            </h3>
+                            <div id="detail-certifications" class="space-y-3">
+                                <!-- Cards injected here -->
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Initial Selected State (No candidate selected) -->
+        <div id="no-selection-state" class="hidden flex-1 flex flex-col items-center justify-center text-center p-8">
+            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-200">
+                <i data-lucide="mouse-pointer-click" class="w-6 h-6 text-slate-400"></i>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">Select a candidate</h3>
+            <p class="text-slate-500 max-w-sm">Choose a candidate from the sidebar to view their full profile, skills, and certifications.</p>
+        </div>
+
+    </main>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 z-20 hidden md:hidden"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

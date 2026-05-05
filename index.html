@@ -64,7 +64,7 @@
             <label for="file-upload-small" class="cursor-pointer text-slate-400 hover:text-brand-600 transition-colors" title="Upload new file">
                 <i data-lucide="upload-cloud" class="w-5 h-5"></i>
             </label>
-            <input id="file-upload-small" type="file" accept=".xlsx, .xls" class="hidden" />
+            <input id="file-upload-small" type="file" accept=".xlsx, .xls, .csv" class="hidden" />
         </div>
         
         <div class="p-4">
@@ -102,13 +102,13 @@
                     <i data-lucide="file-spreadsheet" class="w-8 h-8 text-brand-600"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-slate-900 mb-2">Upload Data</h2>
-                <p class="text-slate-500 mb-8">Please upload a valid .xlsx file containing candidate details to populate the dashboard.</p>
+                <p class="text-slate-500 mb-8">Please upload a valid .xlsx or .csv file containing candidate details to populate the dashboard.</p>
                 
                 <label for="file-upload-main" class="cursor-pointer inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg transition-colors shadow-sm w-full mb-3">
                     <i data-lucide="upload"></i>
-                    Select .xlsx File
+                    Select Excel / CSV File
                 </label>
-                <input id="file-upload-main" type="file" accept=".xlsx, .xls" class="hidden" />
+                <input id="file-upload-main" type="file" accept=".xlsx, .xls, .csv" class="hidden" />
                 
                 <button id="download-sample-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition-colors border border-slate-200 shadow-sm w-full">
                     <i data-lucide="download" class="w-4 h-4"></i>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Dashboard</title>
+    <title>Employee Details Portal</title>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,21 +56,26 @@
 
     <!-- Sidebar -->
     <aside class="w-80 bg-white border-r border-slate-200 flex flex-col h-full shadow-sm z-10 hidden md:flex transition-all duration-300" id="sidebar">
-        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div class="p-5 border-b border-slate-100 flex flex-col gap-4">
             <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <i data-lucide="users" class="text-brand-600"></i>
-                Candidates
+                Employee Details Portal
             </h1>
-            <label for="file-upload-small" class="cursor-pointer text-slate-400 hover:text-brand-600 transition-colors" title="Upload new file">
-                <i data-lucide="upload-cloud" class="w-5 h-5"></i>
-            </label>
-            <input id="file-upload-small" type="file" accept=".xlsx, .xls, .csv" class="hidden" />
+            <div class="flex items-center gap-2 w-full">
+                <label for="file-upload-small" class="cursor-pointer flex items-center justify-center bg-brand-50 text-brand-600 hover:bg-brand-100 p-2 rounded-md transition-colors shrink-0 border border-brand-200" title="Upload new file">
+                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                </label>
+                <input id="file-upload-small" type="file" accept=".xlsx, .xls, .csv" class="hidden" />
+                <select id="sheet-selector" class="flex-1 w-full text-sm border border-slate-200 rounded-md py-1.5 px-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 hidden cursor-pointer">
+                    <!-- Sheet options injected here -->
+                </select>
+            </div>
         </div>
         
         <div class="p-4">
             <div class="relative">
                 <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                <input type="text" id="search-input" placeholder="Search candidates..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all placeholder-slate-400">
+                <input type="text" id="search-input" placeholder="Search employees..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all placeholder-slate-400">
             </div>
         </div>
 
@@ -80,7 +85,7 @@
         
         <div id="sidebar-empty" class="hidden flex-1 flex flex-col items-center justify-center p-4 text-center">
              <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mb-2"></i>
-             <p class="text-sm text-slate-500">No candidates found.</p>
+             <p class="text-sm text-slate-500">No employees found.</p>
         </div>
     </aside>
 
@@ -89,7 +94,7 @@
         
         <!-- Mobile Header (Visible only on small screens) -->
         <div class="md:hidden p-4 bg-white border-b border-slate-200 flex items-center justify-between">
-            <h1 class="text-lg font-bold text-slate-900">Candidates</h1>
+            <h1 class="text-lg font-bold text-slate-900">Employees</h1>
             <button id="mobile-menu-btn" class="text-slate-500">
                 <i data-lucide="menu"></i>
             </button>
@@ -102,7 +107,7 @@
                     <i data-lucide="file-spreadsheet" class="w-8 h-8 text-brand-600"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-slate-900 mb-2">Upload Data</h2>
-                <p class="text-slate-500 mb-8">Please upload a valid .xlsx or .csv file containing candidate details to populate the dashboard.</p>
+                <p class="text-slate-500 mb-8">Please upload a valid .xlsx or .csv file containing employee details to populate the dashboard.</p>
                 
                 <label for="file-upload-main" class="cursor-pointer inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg transition-colors shadow-sm w-full mb-3">
                     <i data-lucide="upload"></i>
@@ -136,7 +141,7 @@
                     <div class="lg:col-span-2 space-y-8">
                         
                         <!-- Primary Skills -->
-                        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <section id="section-primary-skills" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
                             <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                                 <i data-lucide="star" class="w-5 h-5 text-amber-500"></i>
                                 Primary Skills
@@ -147,7 +152,7 @@
                         </section>
 
                         <!-- Secondary Skills -->
-                        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <section id="section-secondary-skills" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
                             <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                                 <i data-lucide="layers" class="w-5 h-5 text-brand-500"></i>
                                 Secondary Skills
@@ -163,7 +168,7 @@
                     <div class="space-y-8">
                         
                         <!-- Certifications -->
-                        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 h-full">
+                        <section id="section-certifications" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 h-full">
                             <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                                 <i data-lucide="award" class="w-5 h-5 text-emerald-500"></i>
                                 Certifications
@@ -183,8 +188,8 @@
             <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-200">
                 <i data-lucide="mouse-pointer-click" class="w-6 h-6 text-slate-400"></i>
             </div>
-            <h3 class="text-lg font-medium text-slate-900 mb-1">Select a candidate</h3>
-            <p class="text-slate-500 max-w-sm">Choose a candidate from the sidebar to view their full profile, skills, and certifications.</p>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">Select an employee</h3>
+            <p class="text-slate-500 max-w-sm">Choose an employee from the sidebar to view their full profile, skills, and certifications.</p>
         </div>
 
     </main>

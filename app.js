@@ -129,9 +129,9 @@ function processExcelData(rawJson) {
         return {
             id: Math.random().toString(36).substr(2, 9),
             name: nameKey ? row[nameKey] : 'Unknown Candidate',
-            primarySkills: pSkillsKey ? String(row[pSkillsKey]).split(',').map(s => s.trim()).filter(Boolean) : [],
-            secondarySkills: sSkillsKey ? String(row[sSkillsKey]).split(',').map(s => s.trim()).filter(Boolean) : [],
-            certifications: certsKey ? String(row[certsKey]).split(',').map(s => s.trim()).filter(Boolean) : []
+            primarySkills: pSkillsKey ? String(row[pSkillsKey]).split(/[,|;]+/).map(s => s.trim()).filter(Boolean) : [],
+            secondarySkills: sSkillsKey ? String(row[sSkillsKey]).split(/[,|;]+/).map(s => s.trim()).filter(Boolean) : [],
+            certifications: certsKey ? String(row[certsKey]).split(/[,|;]+/).map(s => s.trim()).filter(Boolean) : []
         };
     }).filter(c => c.name !== 'Unknown Candidate' || c.primarySkills.length > 0); // basic filter
 
